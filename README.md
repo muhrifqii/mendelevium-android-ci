@@ -2,8 +2,8 @@
 </p>
 <h1 align="center"><i>Mendelevium</i> Android CI</h1>
 <p align="center">
-  <a href="https://github.com/muhrifqii/mendelerium-android-ci/blob/master/LICENSE">
-    <img src="https://img.shields.io/github/license/muhrifqii/mendelerium-android-ci"/>
+  <a href="https://github.com/muhrifqii/mendelevium-android-ci/blob/master/LICENSE">
+    <img src="https://img.shields.io/github/license/muhrifqii/mendelevium-android-ci"/>
   </a>
 </p>
 <p align="center">An all-in-one build tools for android Deployment</p>
