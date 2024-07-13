@@ -6,12 +6,9 @@ LABEL org.opencontainers.image.source=https://github.com/muhrifqii/mendelevium-a
 LABEL org.opencontainers.image.url=https://github.com/muhrifqii/mendelevium-android-ci
 LABEL org.opencontainers.image.description="Docker image for Android CI inside ubuntu nobble with Java17, Ruby, Node.js"
 
-ARG rubygem=true
-ARG npm=true
-
 ENV NVM_DIR="/tools/nvm" RBENV_DIR="/tools/rbenv" ANDROID_SDK_ROOT="/tools/android-sdk" JAVA_HOME="/tools/java/openjdk"
 ENV PATH="$JAVA_HOME/bin:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/platform-tools:$ANDROID_SDK_ROOT/emulator:$PATH"
-ENV PATH="$NVM_DIR/bin:$RBENV_DIR/shims:$RBENV_DIR/bin:$RBENV_DIR/plugins/ruby-build/bin:$PATH"
+ENV PATH="$RBENV_DIR/shims:$RBENV_DIR/bin:$RBENV_DIR/plugins/ruby-build/bin:$PATH"
 ENV DEBIAN_FRONTEND=noninteractive
 ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
 
@@ -88,26 +85,21 @@ RUN set -eux; \
   echo "java --version"; java --version; \
   echo "JDK installed"
 
+RUN mkdir -p $NVM_DIR \
+  && curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash \
+  && echo 'source $NVM_DIR/nvm.sh' >> /etc/profile \
+  && nvm install 20 \
+  && echo "NPM installed"
+RUN npm install -g yarn \
+  && echo "Yarn installed"
+
 ENV CONFIGURE_OPTS=--disable-install-doc
-RUN if [ "$rubygem" = "true" ]; then \
-  git clone https://github.com/rbenv/rbenv.git "$RBENV_DIR"; \
-  rbenv init; \
-  git clone https://github.com/rbenv/ruby-build.git "$RBENV_DIR/plugins/ruby-build"; \
-  rbenv install 3.2.1; \
-  rbenv global 3.2.1; \
-  gem install bundler; \
-  echo "RubyGem installed"; \
-  fi
-
-RUN if [ "$npm" = "true" ]; then \
-  curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash; \
-  echo 'source $NVM_DIR/nvm.sh' >> /etc/profile; \
-  /bin/bash -l -c "nvm install;" \
-  "nvm use;" \
-  echo "NPM installed"; \
-  fi
-
-RUN which java && which ruby && which npm
+RUN git clone https://github.com/rbenv/rbenv.git "$RBENV_DIR" \
+  && git clone https://github.com/rbenv/ruby-build.git "$RBENV_DIR/plugins/ruby-build"
+RUN rbenv install 3.2.1 && rbenv global 3.2.1 \
+  && gem install bundler \
+  && echo "RubyGem installed"
+RUN ruby -v
 
 RUN curl -s https://dl.google.com/android/repository/commandlinetools-linux-${VERSION_TOOLS}_latest.zip > /cmdline-tools.zip \
   && mkdir -p ${ANDROID_SDK_ROOT}/cmdline-tools \
