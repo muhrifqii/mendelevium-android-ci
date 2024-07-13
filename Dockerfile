@@ -85,18 +85,23 @@ RUN set -eux; \
   echo "java --version"; java --version; \
   echo "JDK installed"
 
+ENV NODE_VERSION=20.4.0
 RUN mkdir -p $NVM_DIR \
   && curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash \
-  && echo 'source $NVM_DIR/nvm.sh' >> /etc/profile \
-  && nvm install 20 \
+  && . $NVM_DIR/nvm.sh \
+  && nvm install $NODE_VERSION \
+  && nvm alias default $NODE_VERSION \
+  && nvm use default \
   && echo "NPM installed"
+ENV NODE_PATH=$NVM_DIR/v$NODE_VERSION/lib/node_modules
+ENV PATH=$NVM_DIR/versions/node/v$NODE_VERSION/bin:$PATH
 RUN npm install -g yarn \
   && echo "Yarn installed"
 
-ENV CONFIGURE_OPTS=--disable-install-doc
+ENV RUBY_VERSION=3.2.1 CONFIGURE_OPTS=--disable-install-doc
 RUN git clone https://github.com/rbenv/rbenv.git "$RBENV_DIR" \
   && git clone https://github.com/rbenv/ruby-build.git "$RBENV_DIR/plugins/ruby-build"
-RUN rbenv install 3.2.1 && rbenv global 3.2.1 \
+RUN rbenv install $RUBY_VERSION && rbenv global $RUBY_VERSION \
   && gem install bundler \
   && echo "RubyGem installed"
 RUN ruby -v
