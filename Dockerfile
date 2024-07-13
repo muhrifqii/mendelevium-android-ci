@@ -29,6 +29,7 @@ RUN apt-get update \
     git-core \
     html2text \
     unzip \
+    rustc libssl-dev libyaml-dev libreadline6-dev zlib1g-dev libgmp-dev libncurses5-dev libffi-dev libgdbm6 libgdbm-dev libdb-dev uuid-dev \
   && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* 
 
 RUN locale-gen en_US.UTF-8
@@ -98,11 +99,12 @@ ENV PATH=$NVM_DIR/versions/node/v$NODE_VERSION/bin:$PATH
 RUN npm install -g yarn \
   && echo "Yarn installed"
 
-ENV RUBY_VERSION=3.2.1 CONFIGURE_OPTS=--disable-install-doc
+ENV RUBY_VERSION=3.2.1 CONFIGURE_OPTS=--disable-install-doc RBENV_ROOT=$RBENV_DIR
 RUN git clone https://github.com/rbenv/rbenv.git "$RBENV_DIR" \
-  && git clone https://github.com/rbenv/ruby-build.git "$RBENV_DIR/plugins/ruby-build"
-RUN rbenv install $RUBY_VERSION && rbenv global $RUBY_VERSION \
-  && gem install bundler \
+  && git clone https://github.com/rbenv/ruby-build.git "$RBENV_DIR/plugins/ruby-build" \
+  && echo 'eval "$(rbenv init -)"' >> /etc/profile.d/rbenv.sh # or /etc/profile
+RUN rbenv install $RUBY_VERSION && rbenv global $RUBY_VERSION
+RUN gem install bundler \
   && echo "RubyGem installed"
 RUN ruby -v
 
