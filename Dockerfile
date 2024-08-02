@@ -6,7 +6,8 @@ LABEL org.opencontainers.image.source=https://github.com/muhrifqii/mendelevium-a
 LABEL org.opencontainers.image.url=https://github.com/muhrifqii/mendelevium-android-ci
 LABEL org.opencontainers.image.description="Docker image for Android CI inside ubuntu nobble with Java17, Ruby, Node.js"
 
-ENV NVM_DIR="/tools/nvm" RBENV_DIR="/tools/rbenv" ANDROID_SDK_ROOT="/tools/android-sdk" JAVA_HOME="/tools/java/openjdk"
+ENV ROOT_TOOLS=/usr/local/mendelevium
+ENV NVM_DIR="$ROOT_TOOLS/nvm" RBENV_DIR="$ROOT_TOOLS/rbenv" ANDROID_SDK_ROOT="$ROOT_TOOLS/android-sdk" JAVA_HOME="$ROOT_TOOLS/java/openjdk"
 ENV PATH="$JAVA_HOME/bin:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/platform-tools:$ANDROID_SDK_ROOT/emulator:$PATH"
 ENV PATH="$RBENV_DIR/shims:$RBENV_DIR/bin:$RBENV_DIR/plugins/ruby-build/bin:$PATH"
 ENV DEBIAN_FRONTEND=noninteractive
