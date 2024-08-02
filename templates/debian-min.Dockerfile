@@ -1,4 +1,8 @@
-FROM ubuntu:24.10
+ARG BASE_IMAGE
+ARG NODE_ARG
+ARG RUBY_ARG
+
+FROM $BASE_IMAGE
 
 LABEL org.opencontainers.image.authors="muh_rif@live.com"
 LABEL org.opencontainers.image.title="Mendelevium Android CI"
@@ -7,9 +11,8 @@ LABEL org.opencontainers.image.url=https://github.com/muhrifqii/mendelevium-andr
 LABEL org.opencontainers.image.description="Docker image for Android CI inside ubuntu nobble with Java17, Ruby, Node.js"
 
 ENV ROOT_TOOLS=/usr/local/mendelevium
-ENV NVM_DIR="$ROOT_TOOLS/nvm" RBENV_DIR="$ROOT_TOOLS/rbenv" ANDROID_SDK_ROOT="$ROOT_TOOLS/android-sdk" JAVA_HOME="$ROOT_TOOLS/java/openjdk"
+ENV ANDROID_SDK_ROOT="$ROOT_TOOLS/android-sdk" JAVA_HOME="$ROOT_TOOLS/java/openjdk"
 ENV PATH="$JAVA_HOME/bin:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/platform-tools:$ANDROID_SDK_ROOT/emulator:$PATH"
-ENV PATH="$RBENV_DIR/shims:$RBENV_DIR/bin:$RBENV_DIR/plugins/ruby-build/bin:$PATH"
 ENV DEBIAN_FRONTEND=noninteractive
 ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
 
@@ -17,20 +20,12 @@ ENV VERSION_TOOLS="11076708" JAVA_VERSION="jdk-17.0.11+9"
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
-    build-essential \
-    fontconfig \
-    bzip2 \
     locales \
     ca-certificates p11-kit \
     curl wget \
-    binutils \
-    tzdata \
     apt-transport-https \
     gpg \
-    git-core \
-    html2text \
     unzip \
-    rustc libssl-dev libyaml-dev libreadline6-dev zlib1g-dev libgmp-dev libncurses5-dev libffi-dev libgdbm6 libgdbm-dev libdb-dev uuid-dev \
   && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* 
 
 RUN locale-gen en_US.UTF-8
@@ -86,28 +81,6 @@ RUN set -eux; \
   echo "javac --version"; javac --version; \
   echo "java --version"; java --version; \
   echo "JDK installed"
-
-ENV NODE_VERSION=20.4.0
-RUN mkdir -p $NVM_DIR \
-  && curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash \
-  && . $NVM_DIR/nvm.sh \
-  && nvm install $NODE_VERSION \
-  && nvm alias default $NODE_VERSION \
-  && nvm use default \
-  && echo "NPM installed"
-ENV NODE_PATH=$NVM_DIR/v$NODE_VERSION/lib/node_modules
-ENV PATH=$NVM_DIR/versions/node/v$NODE_VERSION/bin:$PATH
-RUN npm install -g yarn \
-  && echo "Yarn installed"
-
-ENV RUBY_VERSION=3.2.1 CONFIGURE_OPTS=--disable-install-doc RBENV_ROOT=$RBENV_DIR
-RUN git clone https://github.com/rbenv/rbenv.git "$RBENV_DIR" \
-  && git clone https://github.com/rbenv/ruby-build.git "$RBENV_DIR/plugins/ruby-build" \
-  && echo 'eval "$(rbenv init -)"' >> /etc/profile.d/rbenv.sh # or /etc/profile
-RUN rbenv install $RUBY_VERSION && rbenv global $RUBY_VERSION
-RUN gem install bundler \
-  && echo "RubyGem installed"
-RUN ruby -v
 
 RUN curl -s https://dl.google.com/android/repository/commandlinetools-linux-${VERSION_TOOLS}_latest.zip > /cmdline-tools.zip \
   && mkdir -p ${ANDROID_SDK_ROOT}/cmdline-tools \

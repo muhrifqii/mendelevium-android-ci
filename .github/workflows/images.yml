@@ -13,11 +13,25 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
+    strategy:
+      matrix:
+        distro: [noble]
+        tools: [default, min]
+        java: [17]
+        node: [0, 20.16.0]
+        ruby: [0, 3.2.1]
+        exclude:
+          - tools: min
+          - tools: default
+            node: 0
+            ruby: 0
+        include:
+          - tools: min
+            node: 0
+            ruby: 0
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Docker Metadata
         id: meta
         uses: docker/metadata-action@v5
@@ -25,9 +39,13 @@ jobs:
           images: |
             muhrifqii/mendelevium-android-ci
           tags: |
-            type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', 'master') }}
-            type=raw,value={{tag}}
+            type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', 'master') && matrix.tools == 'default' && matrix.distro == 'noble' }}
+            type=raw,value={{tag}},suffix=${{ matrix.tools == 'min' && 'min' }}
           flavor: latest=true
+      - name: Map Distro Image
+        id: distro
+        run: |
+          echo '${{ matrix.distro == 'noble' && 'ubuntu:24.10' }}' >> "$GITHUB_OUTPUT"
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
       - name: Set up Docker Buildx
@@ -44,4 +62,8 @@ jobs:
           context: .
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          file: templates/${{ matrix.distro == 'noble' && 'debian' || 'debian' }}-${{ matrix.tools }}.Dockerfile
+          build-args: |
+            NODE_ARG=${{ matrix.node }}
+            RUBY_ARG=${{ matrix.ruby }}
+            BASE_IMAGE=${{ steps.distro.outputs }}
