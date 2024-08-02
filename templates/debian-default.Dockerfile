@@ -1,6 +1,4 @@
 ARG BASE_IMAGE
-ARG NODE_ARG
-ARG RUBY_ARG
 
 FROM $BASE_IMAGE
 
@@ -9,6 +7,9 @@ LABEL org.opencontainers.image.title="Mendelevium Android CI"
 LABEL org.opencontainers.image.source=https://github.com/muhrifqii/mendelevium-android-ci
 LABEL org.opencontainers.image.url=https://github.com/muhrifqii/mendelevium-android-ci
 LABEL org.opencontainers.image.description="Docker image for Android CI inside ubuntu nobble with Java17, Ruby, Node.js"
+
+ARG NODE_ARG
+ARG RUBY_ARG
 
 ENV ROOT_TOOLS=/usr/local/mendelevium
 ENV NVM_DIR="$ROOT_TOOLS/nvm" RBENV_DIR="$ROOT_TOOLS/rbenv" ANDROID_SDK_ROOT="$ROOT_TOOLS/android-sdk" JAVA_HOME="$ROOT_TOOLS/java/openjdk"
