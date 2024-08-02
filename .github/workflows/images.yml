@@ -17,18 +17,17 @@ jobs:
       matrix:
         distro: [noble]
         tools: [default, min]
-        java: [17]
-        node: [0, 20.16.0]
-        ruby: [0, 3.2.1]
+        node: [0]
+        ruby: [0]
         exclude:
-          - tools: min
           - tools: default
             node: 0
+          - tools: default
             ruby: 0
         include:
-          - tools: min
-            node: 0
-            ruby: 0
+          - tools: default
+            node: 20.16.0
+            ruby: 3.2.1
     steps:
       - name: Checkout
         uses: actions/checkout@v4
