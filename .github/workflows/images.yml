@@ -45,7 +45,7 @@ jobs:
       - name: Map Distro Image
         id: distro
         run: |
-          echo '${{ matrix.distro == 'noble' && 'ubuntu:24.10' }}' >> "$GITHUB_OUTPUT"
+          echo 'image=${{ matrix.distro == 'noble' && 'ubuntu:24.10' }}' >> "$GITHUB_OUTPUT"
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
       - name: Set up Docker Buildx
@@ -66,4 +66,4 @@ jobs:
           build-args: |
             NODE_ARG=${{ matrix.node }}
             RUBY_ARG=${{ matrix.ruby }}
-            BASE_IMAGE=${{ steps.distro.outputs }}
+            BASE_IMAGE=${{ steps.distro.outputs.image }}
