@@ -27,6 +27,7 @@ RUN apt-get update \
     apt-transport-https \
     gpg \
     unzip \
+    python3-pip \
   && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* 
 
 RUN locale-gen en_US.UTF-8
