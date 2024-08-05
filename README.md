@@ -24,6 +24,7 @@
 ## About image
 
 This docker image contains required tools for building Android applications, especially in CI environment
+
 It contains:
 - Base OS tools (from base Ubuntu Noble)
 - OpenJDK 17 `v17.0.11`
@@ -47,6 +48,7 @@ Currently available os (`<os>`) are:
 - `noble`
 
 Image Tag Format is `<android_api>-<tools_matrix>-<os>`
+
 Default Tool Matrix Image Tag Format is `<tag>` and `latest`
 
 ## Gitlab CI Example

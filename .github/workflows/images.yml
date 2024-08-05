@@ -9,6 +9,9 @@ on:
   pull_request:
     branches:
       - master
+    paths:
+      - "templates/*"
+      - "packages.txt"
 
 jobs:
   build:
@@ -20,6 +23,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Check Default Build
+        id: check_default
+        run: |
+          echo 'default=${{ matrix.tools == 'default' && matrix.distro == 'noble' && 'true' }}' >> "$GITHUB_OUTPUT"
       - name: Map Distro Image
         id: distro
         run: |
@@ -48,7 +55,7 @@ jobs:
           images: |
             muhrifqii/mendelevium-android-ci
           tags: |
-            type=raw,value=latest,enable=${{ matrix.tools == 'default' && matrix.distro == 'noble' }}
+            type=raw,value=latest,enable=${{ steps.check_default.outputs.default == 'true' }}
             type=pep440,pattern={{version}},enable=${{ matrix.distro == 'noble' && matrix.tools == 'default'}}
             type=pep440,pattern={{major}},suffix=${{ matrix.tools == 'default' && '' || format('-{0}', matrix.tools) }}${{ format('-{0}', matrix.distro)}}
           flavor: latest=false
@@ -66,7 +73,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          push: ${{ github.event_name != 'pull_request' }}
+          push: ${{ (github.event_name != 'pull_request' && github.ref == format('refs/heads/{0}', 'master') && steps.check_default.outputs.default == 'true') || (github.event_name == 'push' && contains(github.ref, 'refs/tags/')) }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           file: ${{ steps.dockerfile.outputs.dockerfile }}
