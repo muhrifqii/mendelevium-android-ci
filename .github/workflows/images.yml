@@ -23,17 +23,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Docker Metadata
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: |
-            muhrifqii/mendelevium-android-ci
-          tags: |
-            type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', 'master') && matrix.tools == 'default' && matrix.distro == 'noble' }}
-            type=raw,value={{tag}},enable=${{ matrix.distro == 'noble' && matrix.tools == 'default'}}
-            type=raw,value={{tag}},suffix=${{ matrix.tools == 'default' && '' || format('-{0}', matrix.tools) }}${{ format('-{0}', matrix.distro)}}
-          flavor: latest=true
       - name: Map Distro Image
         id: distro
         run: |
@@ -49,6 +38,17 @@ jobs:
         id: ruby_version
         run: |
           echo 'ruby=3.2.1' >> "$GITHUB_OUTPUT"
+      - name: Docker Metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            muhrifqii/mendelevium-android-ci
+          tags: |
+            type=raw,value=latest,enable=${{ matrix.tools == 'default' && matrix.distro == 'noble' }}
+            type=pep440,enable=${{ matrix.distro == 'noble' && matrix.tools == 'default'}}
+            type=pep440,suffix=${{ matrix.tools == 'default' && '' || format('-{0}', matrix.tools) }}${{ format('-{0}', matrix.distro)}}
+          flavor: latest=false
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
       - name: Set up Docker Buildx
