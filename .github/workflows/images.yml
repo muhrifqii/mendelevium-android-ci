@@ -16,11 +16,10 @@ jobs:
     strategy:
       matrix:
         distro: [noble]
-        tools: [default, min]
-        node: [20.16.0]
-        ruby: [3.2.1]
+        tools: [default, node22, min]
         exclude:
           - tools: default
+          - tools: node22
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -32,12 +31,24 @@ jobs:
             muhrifqii/mendelevium-android-ci
           tags: |
             type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', 'master') && matrix.tools == 'default' && matrix.distro == 'noble' }}
-            type=raw,value={{tag}},suffix=${{ matrix.distro == '' && '' || format('-{0}', matrix.distro)}}${{ matrix.tools == 'min' && '-min' || '' }}
+            type=raw,value={{tag}},enable=${{ matrix.distro == 'noble' && matrix.tools == 'default'}}
+            type=raw,value={{tag}},suffix=${{ matrix.tools == 'default' && '' || format('-{0}', matrix.tools) }}${{ format('-{0}', matrix.distro)}}
           flavor: latest=true
       - name: Map Distro Image
         id: distro
         run: |
           echo 'image=${{ matrix.distro == 'noble' && 'ubuntu:24.10' }}' >> "$GITHUB_OUTPUT"
+      - name: Map Node Version
+        id: node_version
+        run: |
+          node20=20.16.0
+          node22=22.5.1
+          version=${{ matrix.tools == 'default' && '$node20' || matrix.tools == 'node22' && '$node22' || '0' }}
+          echo 'node=$version' >> "$GITHUB_OUTPUT"
+      - name: Map Ruby Version
+        id: ruby_version
+        run: |
+          echo 'ruby=3.2.1' >> "$GITHUB_OUTPUT"
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
       - name: Set up Docker Buildx
@@ -57,6 +68,6 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           file: templates/${{ matrix.distro == 'noble' && 'debian' || 'debian' }}-${{ matrix.tools }}.Dockerfile
           build-args: |
-            NODE_ARG=${{ matrix.node }}
-            RUBY_ARG=${{ matrix.ruby }}
+            NODE_ARG=${{ steps.node_version.outputs.node }}
+            RUBY_ARG=${{ steps.ruby_version.outputs.ruby }}
             BASE_IMAGE=${{ steps.distro.outputs.image }}
