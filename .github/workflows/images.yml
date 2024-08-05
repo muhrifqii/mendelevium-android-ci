@@ -32,7 +32,7 @@ jobs:
             muhrifqii/mendelevium-android-ci
           tags: |
             type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', 'master') && matrix.tools == 'default' && matrix.distro == 'noble' }}
-            type=raw,value={{tag}},suffix=${{ matrix.distro != 'noble' && matrix.distro || 'd' }}${{ matrix.tools == 'min' && '-min' || '' }}
+            type=raw,value={{tag}},suffix=${{ matrix.distro != 'noble' && '' || format('-{0}', matrix.distro)}}${{ matrix.tools == 'min' && '-min' || '' }}
           flavor: latest=true
       - name: Map Distro Image
         id: distro
