@@ -35,6 +35,12 @@ jobs:
         id: ruby_version
         run: |
           echo 'ruby=3.2.1' >> "$GITHUB_OUTPUT"
+      - name: Map Dockerfile
+        id: dockerfile
+        run: |
+          distro=${{ matrix.distro == 'noble' && 'debian' || 'debian' }}
+          flavor=${{ matrix.tools == 'min' && 'min' || 'default' }}
+          echo "dockerfile=templates/$distro-$flavor.Dockerfile" >> "$GITHUB_OUTPUT"
       - name: Docker Metadata
         id: meta
         uses: docker/metadata-action@v5
@@ -63,7 +69,7 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          file: templates/${{ matrix.distro == 'noble' && 'debian' || 'debian' }}-${{ matrix.tools }}.Dockerfile
+          file: ${{ steps.dockerfile.outputs.dockerfile }}
           build-args: |
             NODE_ARG=${{ steps.node_version.outputs.node }}
             RUBY_ARG=${{ steps.ruby_version.outputs.ruby }}
