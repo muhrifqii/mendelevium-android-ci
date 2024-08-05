@@ -32,8 +32,9 @@ jobs:
         run: |
           node20=20.16.0
           node22=22.5.1
-          version=${{ matrix.tools == 'default' && '$node20' || matrix.tools == 'node22' && '$node22' || '0' }}
-          echo 'node=$version' >> "$GITHUB_OUTPUT"
+          version=${{ matrix.tools == 'default' && '$node20' || matrix.tools == 'node22' && '$node22' || '$node22' }}
+          echo "node=$version"
+          echo "node=$version" >> "$GITHUB_OUTPUT"
       - name: Map Ruby Version
         id: ruby_version
         run: |
@@ -46,8 +47,8 @@ jobs:
             muhrifqii/mendelevium-android-ci
           tags: |
             type=raw,value=latest,enable=${{ matrix.tools == 'default' && matrix.distro == 'noble' }}
-            type=pep440,enable=${{ matrix.distro == 'noble' && matrix.tools == 'default'}}
-            type=pep440,suffix=${{ matrix.tools == 'default' && '' || format('-{0}', matrix.tools) }}${{ format('-{0}', matrix.distro)}}
+            type=pep440,pattern={{version}},enable=${{ matrix.distro == 'noble' && matrix.tools == 'default'}}
+            type=pep440,pattern={{version}},suffix=${{ matrix.tools == 'default' && '' || format('-{0}', matrix.tools) }}${{ format('-{0}', matrix.distro)}}
           flavor: latest=false
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
