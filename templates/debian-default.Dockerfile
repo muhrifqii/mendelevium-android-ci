@@ -1,10 +1,15 @@
-FROM ubuntu:24.10
+ARG BASE_IMAGE
+
+FROM $BASE_IMAGE
 
 LABEL org.opencontainers.image.authors="muh_rif@live.com"
 LABEL org.opencontainers.image.title="Mendelevium Android CI"
 LABEL org.opencontainers.image.source=https://github.com/muhrifqii/mendelevium-android-ci
 LABEL org.opencontainers.image.url=https://github.com/muhrifqii/mendelevium-android-ci
 LABEL org.opencontainers.image.description="Docker image for Android CI inside ubuntu nobble with Java17, Ruby, Node.js"
+
+ARG NODE_ARG
+ARG RUBY_ARG
 
 ENV ROOT_TOOLS=/usr/local/mendelevium
 ENV NVM_DIR="$ROOT_TOOLS/nvm" RBENV_DIR="$ROOT_TOOLS/rbenv" ANDROID_SDK_ROOT="$ROOT_TOOLS/android-sdk" JAVA_HOME="$ROOT_TOOLS/java/openjdk"
@@ -30,6 +35,7 @@ RUN apt-get update \
     git-core \
     html2text \
     unzip \
+    python3-pip \
     rustc libssl-dev libyaml-dev libreadline6-dev zlib1g-dev libgmp-dev libncurses5-dev libffi-dev libgdbm6 libgdbm-dev libdb-dev uuid-dev \
   && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* 
 
@@ -87,7 +93,7 @@ RUN set -eux; \
   echo "java --version"; java --version; \
   echo "JDK installed"
 
-ENV NODE_VERSION=20.4.0
+ENV NODE_VERSION=$NODE_ARG
 RUN mkdir -p $NVM_DIR \
   && curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash \
   && . $NVM_DIR/nvm.sh \
@@ -100,7 +106,7 @@ ENV PATH=$NVM_DIR/versions/node/v$NODE_VERSION/bin:$PATH
 RUN npm install -g yarn \
   && echo "Yarn installed"
 
-ENV RUBY_VERSION=3.2.1 CONFIGURE_OPTS=--disable-install-doc RBENV_ROOT=$RBENV_DIR
+ENV RUBY_VERSION=$RUBY_ARG CONFIGURE_OPTS=--disable-install-doc RBENV_ROOT=$RBENV_DIR
 RUN git clone https://github.com/rbenv/rbenv.git "$RBENV_DIR" \
   && git clone https://github.com/rbenv/ruby-build.git "$RBENV_DIR/plugins/ruby-build" \
   && echo 'eval "$(rbenv init -)"' >> /etc/profile.d/rbenv.sh # or /etc/profile

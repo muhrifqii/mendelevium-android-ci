@@ -13,11 +13,34 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
+    strategy:
+      matrix:
+        distro: [noble]
+        tools: [default, node20, node22, min]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
+      - name: Map Distro Image
+        id: distro
+        run: |
+          echo 'image=${{ matrix.distro == 'noble' && 'ubuntu:24.10' }}' >> "$GITHUB_OUTPUT"
+      - name: Map Node Version
+        id: node_version
+        run: |
+          node20=20.16.0
+          node22=22.5.1
+          version=${{ matrix.tools == 'node22' && '$node22' || '$node20' }}
+          echo "node=$version" >> "$GITHUB_OUTPUT"
+      - name: Map Ruby Version
+        id: ruby_version
+        run: |
+          echo 'ruby=3.2.1' >> "$GITHUB_OUTPUT"
+      - name: Map Dockerfile
+        id: dockerfile
+        run: |
+          distro=${{ matrix.distro == 'noble' && 'debian' || 'debian' }}
+          flavor=${{ matrix.tools == 'min' && 'min' || 'default' }}
+          echo "dockerfile=templates/$distro-$flavor.Dockerfile" >> "$GITHUB_OUTPUT"
       - name: Docker Metadata
         id: meta
         uses: docker/metadata-action@v5
@@ -25,9 +48,10 @@ jobs:
           images: |
             muhrifqii/mendelevium-android-ci
           tags: |
-            type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', 'master') }}
-            type=raw,value={{tag}}
-          flavor: latest=true
+            type=raw,value=latest,enable=${{ matrix.tools == 'default' && matrix.distro == 'noble' }}
+            type=pep440,pattern={{version}},enable=${{ matrix.distro == 'noble' && matrix.tools == 'default'}}
+            type=pep440,pattern={{major}},suffix=${{ matrix.tools == 'default' && '' || format('-{0}', matrix.tools) }}${{ format('-{0}', matrix.distro)}}
+          flavor: latest=false
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
       - name: Set up Docker Buildx
@@ -45,3 +69,8 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          file: ${{ steps.dockerfile.outputs.dockerfile }}
+          build-args: |
+            NODE_ARG=${{ steps.node_version.outputs.node }}
+            RUBY_ARG=${{ steps.ruby_version.outputs.ruby }}
+            BASE_IMAGE=${{ steps.distro.outputs.image }}
