@@ -77,6 +77,8 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           file: ${{ steps.dockerfile.outputs.dockerfile }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
           build-args: |
             NODE_ARG=${{ steps.node_version.outputs.node }}
             RUBY_ARG=${{ steps.ruby_version.outputs.ruby }}
